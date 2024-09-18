@@ -1,0 +1,13 @@
+{
+	"@metadata": {
+		"authors": [
+			"Casey Tucker"
+		]
+	},
+	"csvmodel-desc": "Provides CSV reading and writing",
+	"csv-error-category": "Pages with CSV errors",
+	"csv-error-category-desc": "There was an error when attempting to parse CSV included on the page.",
+	"csv-visualeditor-mwmarkdowninspector-code": "Code",
+	"csv-visualeditor-mwmarkdowninspector-title": "CSV",
+	"csv-error-parse-failure": "Failed to parse CSV"
+}

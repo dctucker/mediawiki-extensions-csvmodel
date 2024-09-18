@@ -1,0 +1,93 @@
+{
+	"name": "CsvModel",
+	"version": "1.0.",
+	"author": [
+		"Casey Tucker"
+	],
+	"url": "https://www.mediawiki.org/wiki/Extension:CsvModel",
+	"descriptionmsg": "csvmodel-desc",
+	"license-name": "MIT",
+	"type": "parserhook",
+	"requires": {
+		"MediaWiki": ">= 1.41"
+	},
+	"MessagesDirs": {
+		"CsvModel": [
+			"i18n"
+		]
+	},
+	"AutoloadClasses": {
+		"Hooks": "includes/Hooks.php",
+		"CsvContentHandler": "includes/CsvContentHandler.php",
+		"CsvContent": "includes/CsvContent.php",
+		"CsvEditAction": "includes/CsvEditAction.php",
+		"CsvEditPage": "includes/CsvEditPage.php"
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "modules",
+		"remoteExtPath": "CsvContent/modules"
+	},
+	"ResourceModules": {
+		"ext.csvmodel": {
+			"scripts": [
+				"main.js"
+			],
+			"dependencies": [
+				"ext.jspreadsheet"
+			]
+		},
+		"ext.jsuites": {
+			"scripts": [
+				"jsuites.js"
+			],
+			"styles": [
+				"jsuites.css"
+			],
+			"dependencies": [
+				"mediawiki.util",
+				"mediawiki.api",
+				"mediawiki.action.edit",
+				"oojs-ui-core",
+				"oojs-ui-widgets",
+				"oojs-ui-windows",
+				"oojs-ui.styles.icons-moderation",
+				"oojs-ui.styles.icons-movement"
+			]
+		},
+		"ext.jspreadsheet": {
+			"scripts": [
+				"jexcel.js"
+			],
+			"styles": [
+				"jspreadsheet.css",
+				"jspreadsheet.theme.css"
+			],
+			"dependencies": [
+				"ext.jsuites"
+			]
+		}
+	},
+	"Hooks": {
+		"BeforePageDisplay": "Hooks::onBeforePageDisplay",
+		"ParserFirstCallInit": "Hooks::onParserFirstCallInit",
+		"ResourceLoaderRegisterModules": "Hooks::onResourceLoaderRegisterModules",
+		"ContentHandlerDefaultModelFor": "Hooks::onContentHandlerDefaultModelFor",
+		"CodeEditorGetPageLanguage": "Hooks::onCodeEditorGetPageLanguage"
+	},
+	"attributes": {
+		"VisualEditor": {
+			"PluginModules": [
+				"ext.csvmodel.visualEditor"
+			]
+		}
+	},
+	"callback": "Hooks::onRegistration",
+	"config": {},
+	"ContentHandlers": {
+		"csv": "CsvContentHandler"
+	},
+	"TrackingCategories": [
+		"csv-error-category"
+	],
+	"manifest_version": 2
+}
