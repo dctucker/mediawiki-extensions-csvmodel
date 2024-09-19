@@ -40,7 +40,8 @@ class CsvContentHandler extends CodeContentHandler {
 			$html = $content->getCsvCell(5,5);
 		else
 		$html = $content->getWikitextForTransclusion();
-		$output->setText($html);
+		$output = MediaWikiServices::getInstance()->getParserFactory()->getInstance()
+			->parse($html, $cpoParams->getPage(), $cpoParams->getParserOptions(), true, true, $cpoParams->getRevId());
 	}
 
 	public function getActionOverrides() {

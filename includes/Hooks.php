@@ -86,6 +86,6 @@ class Hooks // implements EditPage__showEditForm_initialHook
 	}
 
 	public function onBeforePageDisplay( $out, $skin ): void {
-		$out->addModules("ext.jspreadsheet");
+		//$out->addModules("ext.jspreadsheet");
 	}
 }

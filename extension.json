@@ -30,7 +30,7 @@
 	"ResourceModules": {
 		"ext.csvmodel": {
 			"scripts": [
-				"main.js"
+				"ext.csvmodel.js"
 			],
 			"dependencies": [
 				"ext.jspreadsheet"
@@ -46,12 +46,7 @@
 			"dependencies": [
 				"mediawiki.util",
 				"mediawiki.api",
-				"mediawiki.action.edit",
-				"oojs-ui-core",
-				"oojs-ui-widgets",
-				"oojs-ui-windows",
-				"oojs-ui.styles.icons-moderation",
-				"oojs-ui.styles.icons-movement"
+				"mediawiki.action.edit"
 			]
 		},
 		"ext.jspreadsheet": {
@@ -63,7 +58,8 @@
 				"jspreadsheet.theme.css"
 			],
 			"dependencies": [
-				"ext.jsuites"
+				"ext.jsuites",
+				"ext.wikiEditor"
 			]
 		}
 	},

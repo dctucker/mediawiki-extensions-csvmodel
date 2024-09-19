@@ -196,7 +196,8 @@ class CsvContent extends TextContent {
 			}
 			$html .= "</tr>\n";
 		}
-		$html .= "</table>";
+		$html .= "</table>\n";
+		$html .= "<noinclude>[[Category:CSV]]</noinclude>\n";
 		return $html;
 	}
 

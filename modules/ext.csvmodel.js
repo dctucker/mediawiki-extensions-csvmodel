@@ -1,11 +1,11 @@
 
 
-model = {
-	textarea: document.getElementById('wpTextbox1'),
+var csvmodel = {
+	textarea: document.getElementById('wpTextbox1'), // document.forms["editform"]["wpTextbox1"]
 	snoop: document.getElementById('spreadsheet1-snoop'),
 	coordinates: document.getElementById('spreadsheet1-coordinates'),
 	getSpreadsheetData: () => {
-		let value = model.textarea.value ;
+		let value = csvmodel.textarea.value ;
 		if ( value !== "" ) {
 			return value.split("\n").map(row => row.split("\t").map(value => value.split("␟")[0]));
 		} else {
@@ -31,7 +31,7 @@ model = {
 		let em = Number(getComputedStyle(document.body,null).fontSize.replace(/[^\d]/g, ''))*0.7;
 		let data = mw.spreadsheet.getData();
 		var emptyAcc = Array(data[0].length).fill(null).map(v => 0);
-		let defw = model.textarea.value === "" ? 5 : 1.7;
+		let defw = csvmodel.textarea.value === "" ? 5 : 1.7;
 		return (data
 			.map(row => row.map(v => v.startsWith("=") ? 5 : v.length ))
 			.reduce((row,acc) => row.map((len,idx) => Math.max(len, acc[idx])), emptyAcc)
@@ -39,31 +39,40 @@ model = {
 		);
 	},
 	updateTextarea: () => {
-		// document.forms["editform"]["wpTextbox1"] =
-		model.textarea.value = model.serialize();
+		csvmodel.textarea.value = csvmodel.serialize();
 	},
-	onSelection: (e) => {
-		// model.textarea.setSelectionRange(0,5);
+	updateCoordinates: () => {
 		let c = mw.spreadsheet.selectedCell;
 		if (c[0] == c[2] && c[1] == c[3]) {
-			model.snoop.value = model.snoop.value = mw.spreadsheet.getData(true)[0][0];
-			model.coordinates.value = jexcel.getColumnNameFromId([c[0],c[1]]);
+			csvmodel.coordinates.value = jexcel.getColumnNameFromId([c[0],c[1]]);
 		} else {
-			model.snoop.value = "";
-			model.coordinates.value = jexcel.getColumnNameFromId([c[0],c[1]]);
-			model.coordinates.value += ":" + jexcel.getColumnNameFromId([c[2],c[3]]);
+			csvmodel.coordinates.value = jexcel.getColumnNameFromId([c[0],c[1]]);
+			csvmodel.coordinates.value += ":" + jexcel.getColumnNameFromId([c[2],c[3]]);
 		}
+	},
+	updateSnoop: () => {
+		let c = mw.spreadsheet.selectedCell;
+		if (c[0] == c[2] && c[1] == c[3]) {
+			csvmodel.snoop.value = csvmodel.snoop.value = mw.spreadsheet.getData(true)[0][0];
+		} else {
+			csvmodel.snoop.value = "";
+		}
+	},
+	onSelection: (e) => {
+		csvmodel.updateCoordinates();
+		csvmodel.updateSnoop();
 	},
 	focus: () => {
 		jexcel.current = mw.spreadsheet;
-		let coord = model.coordinates.value.split(":");
+		let coord = csvmodel.coordinates.value.split(":");
 		var c1 = coord[0]; let c2 = coord.length > 1 ? coord[1] : coord[0];
 		c1 = jexcel.getIdFromColumnName(c1, true); c2 = jexcel.getIdFromColumnName(c2, true);
 		mw.spreadsheet.updateSelectionFromCoords(...c1, ...c2);
-		//mw.spreadsheet.el.focus();
 	},
 };
 
+// cursors move out of edit unless F2 or RETURN initiated the edit.
+// `=` key initiates formula entry
 jexcel.originalKeyDownControls = jexcel.keyDownControls;
 jexcel.keyDownControls = (e) => {
 	if (jexcel.current) {
@@ -115,8 +124,9 @@ jexcel.keyDownControls = (e) => {
 	return jexcel.originalKeyDownControls(e);
 };
 
+// the spreadsheet
 mw.spreadsheet = jspreadsheet(document.getElementById("spreadsheet1"), {
-	data: model.getSpreadsheetData(),
+	data: csvmodel.getSpreadsheetData(),
 	csvDelimiter:"\t",
 	csvHeaders:true,
 	tableOverflow:true,
@@ -124,25 +134,22 @@ mw.spreadsheet = jspreadsheet(document.getElementById("spreadsheet1"), {
 	tableHeight:"80%",
 	columnDrag: true,
 	minSpareRows: 1,
-	onselection: e => model.onSelection(e),
+	onselection: e => csvmodel.onSelection(e),
 });
 
-model.columnWidths().forEach((width, idx) => { mw.spreadsheet.setWidth(idx, width); });
-
+// auto adjust column widths and focus the spreadsheet
+csvmodel.columnWidths().forEach((width, idx) => { mw.spreadsheet.setWidth(idx, width); });
 mw.spreadsheet.el.focus();
 
-/*
-mw.spreadsheet.originalOpenEditor = mw.spreadsheet.openEditor;
-mw.spreadsheet.openEditor = (cell, empty, e) => {
-	mw.spreadsheet.emptyEdition = empty;
-	return mw.spreadsheet.originalOpenEditor(cell, empty, e);
-};
-*/
+// add blur handlers to return to spreadsheet when leaving adjacent widgets
+csvmodel.coordinates.addEventListener("blur", csvmodel.focus);
+csvmodel.snoop.addEventListener("blur", csvmodel.focus);
 
+// populate textarea right before the form submits
 $("form#editform").on("submit", e => {
-	model.updateTextarea();
+	csvmodel.updateTextarea();
 	return true;
 });
-
-model.coordinates.addEventListener("blur", model.focus);
-model.snoop.addEventListener("blur", model.focus);
+$("#wpPreview").on("focus", e => {
+	csvmodel.updateTextarea();
+});
