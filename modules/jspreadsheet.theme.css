@@ -196,3 +196,8 @@
 	color: var(--jexcel_content_color_highlighted);
 }
 */
+
+td.editor input {
+	text-align:inherit;
+	font-size:inherit;
+}
