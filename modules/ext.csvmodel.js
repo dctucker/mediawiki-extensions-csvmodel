@@ -62,6 +62,11 @@ var csvmodel = {
 		csvmodel.updateCoordinates();
 		csvmodel.updateSnoop();
 	},
+	parseWikitext: (text) => {
+	},
+	onChange: (instance, cell, x, y, value) => {
+		console.log(value);
+	},
 	focus: () => {
 		jexcel.current = mw.spreadsheet;
 		let coord = csvmodel.coordinates.value.split(":");
@@ -134,7 +139,19 @@ mw.spreadsheet = jspreadsheet(document.getElementById("spreadsheet1"), {
 	tableHeight:"80%",
 	columnDrag: true,
 	minSpareRows: 1,
-	onselection: e => csvmodel.onSelection(e),
+	onselection: csvmodel.onSelection,
+	onchange: csvmodel.onChange,
+	updateTable: (instance, cell, col, row, val, label, cellName) => {
+		if (val.startsWith('[[')) {
+			var api = new mw.Api();
+			api.parse(val, {
+				preview: true,
+				disablelimitreport: true
+			}).then(html => {
+				cell.innerHTML = $(html).contents().unwrap().html();
+			});
+		}
+	},
 });
 
 // auto adjust column widths and focus the spreadsheet
