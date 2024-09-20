@@ -159,7 +159,17 @@ jexcel.keyDownControls = (e) => {
 								e.preventDefault();
 								return;
 							}
-						} else if ([KeyEvent.DOM_VK_EQUALS, KeyEvent.DOM_VK_CLOSE_BRACKET, KeyEvent.DOM_VK_OPEN_BRACKET].includes(e.keyCode)) { // =
+						} else if ([
+							KeyEvent.DOM_VK_QUOTE,
+							KeyEvent.DOM_VK_HYPHEN_MINUS,
+							KeyEvent.DOM_VK_SEMICOLON,
+							KeyEvent.DOM_VK_BACK_SLASH,
+							KeyEvent.DOM_VK_SLASH,
+							KeyEvent.DOM_VK_BACK_QUOTE,
+							KeyEvent.DOM_VK_EQUALS,
+							KeyEvent.DOM_VK_CLOSE_BRACKET,
+							KeyEvent.DOM_VK_OPEN_BRACKET,
+						].includes(e.keyCode)) { // =
 							jexcel.current.openEditor(jexcel.current.records[rowId][columnId], true);
 						}
 					}
