@@ -62,11 +62,17 @@ var csvmodel = {
 		csvmodel.updateCoordinates();
 		csvmodel.updateSnoop();
 	},
-	parseWikitext: (text) => {
-	},
-	onChange: (instance, cell, x, y, value) => {
+	onChange: (instance, cell, x, y, value, oldValue) => {
+		let name = jexcel.getColumnNameFromId([x,y]);
+		var oldPreview = instance.jexcel.getMeta(name, "oldPreview");
 		csvmodel.parse(value, (el) => {
+			var hist = instance.jexcel.history[instance.jexcel.historyIndex];
+			var rec = hist.records.filter(rec => rec.x == x && rec.y == y)[0];
+
 			h = el.html();
+			rec.oldPreview = oldPreview;
+			delete instance.jexcel.options.meta[name].oldPreview;
+			rec.newPreview = h;
 			instance.jexcel.setMeta(name, "preview", h);
 			cell.innerHTML = h;
 		});
@@ -99,7 +105,7 @@ var csvmodel = {
 		let parsedTable = el[0];
 		for (var i=0; i < parsedTable.rows.length; i++) {
 			for (var j=0; j < parsedTable.rows[i].cells.length; j++) {
-				let value = parsedTable.rows[i].cells[j].innerHTML;
+				let value = "" + parsedTable.rows[i].cells[j].innerHTML;
 				let name = jexcel.getColumnNameFromId([j,i]);
 				mw.spreadsheet.setMeta(name, "preview", value);
 			}
@@ -132,6 +138,9 @@ jexcel.keyDownControls = (e) => {
 				}
 			}
 		} else { // !jexcel.current.edition
+			if (e.shiftKey && (e.ctrlKey || e.metaKey)) {
+				return;
+			}
 			if (jexcel.current.selectedCell) {
 				if (jexcel.current.options.editable == true) {
 					var rowId = jexcel.current.selectedCell[1];
@@ -150,7 +159,7 @@ jexcel.keyDownControls = (e) => {
 								e.preventDefault();
 								return;
 							}
-						} else if ([KeyEvent.DOM_VK_EQUALS].includes(e.keyCode)) { // =
+						} else if ([KeyEvent.DOM_VK_EQUALS, KeyEvent.DOM_VK_CLOSE_BRACKET, KeyEvent.DOM_VK_OPEN_BRACKET].includes(e.keyCode)) { // =
 							jexcel.current.openEditor(jexcel.current.records[rowId][columnId], true);
 						}
 					}
@@ -159,6 +168,18 @@ jexcel.keyDownControls = (e) => {
 		}
 	}
 	return jexcel.originalKeyDownControls(e);
+};
+
+// reset cell preview on undo/redo. param should be "newPreview" or "oldPreview"
+let doPreview = (param) => (el, historyRecord) => {
+	if (historyRecord && historyRecord.records) {
+		for (var h=0; h < historyRecord.records.length; h++) {
+			var rec = historyRecord.records[h];
+			let name = jexcel.getColumnNameFromId([rec.x,rec.y]);
+			el.jexcel.setMeta(name, "preview", rec[param]);
+		}
+		el.jexcel.updateTable();
+	}
 };
 
 // the spreadsheet
@@ -173,10 +194,14 @@ mw.spreadsheet = jspreadsheet(document.getElementById("spreadsheet1"), {
 	minSpareRows: 1,
 	onselection: csvmodel.onSelection,
 	onchange: csvmodel.onChange,
+	onundo: doPreview("oldPreview"),
+	onredo: doPreview("newPreview"),
 	onbeforechange: (instance, cell, x, y, value) => {
-		cell.innerHTML = value;
+		cell.innerHTML = "" + value;
 		let name = jexcel.getColumnNameFromId([x,y]);
-		instance.jexcel.setMeta(name, "preview", value);
+		instance.jexcel.setMeta(name, "oldPreview", instance.jexcel.getMeta(name, "preview"));
+		// set preview to acutal value until callback completes
+		delete instance.jexcel.options.meta[name].preview;
 	},
 	//updateTable: csvmodel.updateTable,
 	meta: {},
@@ -186,7 +211,9 @@ mw.spreadsheet = jspreadsheet(document.getElementById("spreadsheet1"), {
 	updateTable: (instance, cell, col, row, val, label, cellName) => {
 		html = instance.jexcel.getMeta(cellName, "preview");
 		if (html != null) {
-			cell.innerHTML = html;
+			cell.innerHTML = "" + html;
+		} else {
+			cell.innerHTML = val;
 		}
 	},
 });
