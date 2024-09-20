@@ -229,12 +229,14 @@ mw.spreadsheet = jspreadsheet(document.getElementById("spreadsheet1"), {
 });
 
 // links shouldn't navigate when clicked
-$(document, "table#spreadsheet1 tbody tr td a").on("click", (e) => {
+$(document).on("click", "#spreadsheet1 table tbody tr td a", (e) => {
 	e.preventDefault();
 });
 
 // auto adjust column widths and focus the spreadsheet
-csvmodel.columnWidths().forEach((width, idx) => { mw.spreadsheet.setWidth(idx, width); });
+csvmodel.columnWidths().forEach((width, idx) => {
+	mw.spreadsheet.setWidth(idx, width);
+});
 mw.spreadsheet.el.focus();
 
 // add blur handlers to return to spreadsheet when leaving adjacent widgets
