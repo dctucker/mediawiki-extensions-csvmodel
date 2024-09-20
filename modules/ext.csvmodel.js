@@ -65,7 +65,11 @@ var csvmodel = {
 	parseWikitext: (text) => {
 	},
 	onChange: (instance, cell, x, y, value) => {
-		console.log(value);
+		csvmodel.parse(value, (el) => {
+			h = el.html();
+			instance.jexcel.setMeta(name, "preview", h);
+			cell.innerHTML = h;
+		});
 	},
 	focus: () => {
 		jexcel.current = mw.spreadsheet;
@@ -74,6 +78,34 @@ var csvmodel = {
 		c1 = jexcel.getIdFromColumnName(c1, true); c2 = jexcel.getIdFromColumnName(c2, true);
 		mw.spreadsheet.updateSelectionFromCoords(...c1, ...c2);
 	},
+	parse: async (text, fn) => {
+		var api = new mw.Api();
+		let options = {
+			preview: true,
+			disablelimitreport: true,
+			contentmodel: 'csv',
+		};
+		if (fn !== undefined) {
+			api.parse(text, options).then(html => {
+				fn($(html).contents().unwrap());
+			});
+		} else {
+			html = await api.parse(text, options);
+			return $(html).contents().unwrap();
+		}
+	},
+	loadParsed: async () => {
+		let el = await csvmodel.parse(csvmodel.textarea.value);
+		let parsedTable = el[0];
+		for (var i=0; i < parsedTable.rows.length; i++) {
+			for (var j=0; j < parsedTable.rows[i].cells.length; j++) {
+				let value = parsedTable.rows[i].cells[j].innerHTML;
+				let name = jexcel.getColumnNameFromId([j,i]);
+				mw.spreadsheet.setMeta(name, "preview", value);
+			}
+		}
+		mw.spreadsheet.updateTable();
+	}
 };
 
 // cursors move out of edit unless F2 or RETURN initiated the edit.
@@ -141,17 +173,27 @@ mw.spreadsheet = jspreadsheet(document.getElementById("spreadsheet1"), {
 	minSpareRows: 1,
 	onselection: csvmodel.onSelection,
 	onchange: csvmodel.onChange,
+	onbeforechange: (instance, cell, x, y, value) => {
+		cell.innerHTML = value;
+		let name = jexcel.getColumnNameFromId([x,y]);
+		instance.jexcel.setMeta(name, "preview", value);
+	},
+	//updateTable: csvmodel.updateTable,
+	meta: {},
+	onload: () => {
+		csvmodel.loadParsed();
+	},
 	updateTable: (instance, cell, col, row, val, label, cellName) => {
-		if (val.startsWith('[[')) {
-			var api = new mw.Api();
-			api.parse(val, {
-				preview: true,
-				disablelimitreport: true
-			}).then(html => {
-				cell.innerHTML = $(html).contents().unwrap().html();
-			});
+		html = instance.jexcel.getMeta(cellName, "preview");
+		if (html != null) {
+			cell.innerHTML = html;
 		}
 	},
+});
+
+// links shouldn't navigate when clicked
+$(document, "table#spreadsheet1 tbody tr td a").on("click", (e) => {
+	e.preventDefault();
 });
 
 // auto adjust column widths and focus the spreadsheet
@@ -170,3 +212,5 @@ $("form#editform").on("submit", e => {
 $("#wpPreview").on("focus", e => {
 	csvmodel.updateTextarea();
 });
+
+mw.csvmodel = csvmodel;

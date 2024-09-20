@@ -201,3 +201,9 @@ td.editor input {
 	text-align:inherit;
 	font-size:inherit;
 }
+.jexcel > tbody > tr > td.highlight > a {
+	color: inherit;
+}
+.jexcel > tbody > tr > td > a:hover {
+	cursor: default;
+}

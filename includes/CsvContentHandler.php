@@ -37,9 +37,9 @@ class CsvContentHandler extends CodeContentHandler {
 	) {
 		$cell = $_GET['cell'];
 		if( strlen($cell) > 0 )
-			$html = $content->getCsvCell(5,5);
+			$html = $content->getCsvCell(5,5); # TODO
 		else
-		$html = $content->getWikitextForTransclusion();
+			$html = $content->getWikitextForTransclusion();
 		$output = MediaWikiServices::getInstance()->getParserFactory()->getInstance()
 			->parse($html, $cpoParams->getPage(), $cpoParams->getParserOptions(), true, true, $cpoParams->getRevId());
 	}

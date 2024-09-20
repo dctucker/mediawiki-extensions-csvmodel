@@ -22,9 +22,7 @@ Create a page with content model CSV. This can be achieved automatically by
 suffixing the page name by `.tsv`.
 
 A page with this content model can be transcluded into other articles and will
-present similarly to how it is shown on the view page, with the current
-exception being the view page does not parse wikitext output, yet transcluding
-the page does. This is an inconsistency that would be nice to resolve.
+present similarly to how it is shown on the view page.
 
 When using spreadsheet formulas (e.g. `=SUM(A1:A29)`), the calculated value is
 stored after the formula using a field separator. This allows the value to be
