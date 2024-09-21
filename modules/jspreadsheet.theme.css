@@ -207,3 +207,33 @@ td.editor input {
 .jexcel > tbody > tr > td > a:hover {
 	cursor: default;
 }
+#editpage-copywarn {
+	display:none;
+}
+.editOptions .editCheckboxes {
+	display:none;
+}
+.editOptions, .skin-citizen .mw-editform .editOptions {
+	margin-bottom: 0;
+	padding: 8px;
+}
+footer, footer.citizen-page-footer {
+	display:none;
+}
+.jexcel tbody .jexcel_freezed {
+	background-color: var(--jexcel_header_background);
+	position: sticky;
+	position: -webkit-sticky;
+}
+.jexcel tbody tr td:first-child {
+	position: sticky;
+	position: -webkit-sticky;
+	left: 0;
+}
+.jexcel thead tr td.jexcel_selectall {
+	position: sticky;
+	position: -webkit-sticky;
+	left: 0;
+	top: 0;
+	z-index: 3;
+}

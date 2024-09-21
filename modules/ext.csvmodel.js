@@ -53,7 +53,10 @@ var csvmodel = {
 	updateSnoop: () => {
 		let c = mw.spreadsheet.selectedCell;
 		if (c[0] == c[2] && c[1] == c[3]) {
-			csvmodel.snoop.value = csvmodel.snoop.value = mw.spreadsheet.getData(true)[0][0];
+			let data = mw.spreadsheet.getData(true)[0];
+			if (data) {
+				csvmodel.snoop.value = data[0];
+			}
 		} else {
 			csvmodel.snoop.value = "";
 		}
@@ -63,11 +66,16 @@ var csvmodel = {
 		csvmodel.updateSnoop();
 	},
 	onChange: (instance, cell, x, y, value, oldValue) => {
+		/*
 		let name = jexcel.getColumnNameFromId([x,y]);
 		var oldPreview = instance.jexcel.getMeta(name, "oldPreview");
 		csvmodel.parse(value, (el) => {
 			var hist = instance.jexcel.history[instance.jexcel.historyIndex];
-			var rec = hist.records.filter(rec => rec.x == x && rec.y == y)[0];
+			if (hist.records) {
+				var rec = hist.records.filter(rec => rec.x == x && rec.y == y)[0];
+			} else {
+				return;
+			}
 
 			h = el.html();
 			rec.oldPreview = oldPreview;
@@ -76,6 +84,7 @@ var csvmodel = {
 			instance.jexcel.setMeta(name, "preview", h);
 			cell.innerHTML = h;
 		});
+		*/
 	},
 	focus: () => {
 		jexcel.current = mw.spreadsheet;
@@ -199,9 +208,10 @@ mw.spreadsheet = jspreadsheet(document.getElementById("spreadsheet1"), {
 	csvHeaders:true,
 	tableOverflow:true,
 	tableWidth:"100%",
-	tableHeight:"80%",
+	tableHeight:"calc(100vh - 320px)",
 	columnDrag: true,
 	minSpareRows: 1,
+	freezeColumns: 0,
 	onselection: csvmodel.onSelection,
 	onchange: csvmodel.onChange,
 	onundo: doPreview("oldPreview"),
@@ -211,7 +221,9 @@ mw.spreadsheet = jspreadsheet(document.getElementById("spreadsheet1"), {
 		let name = jexcel.getColumnNameFromId([x,y]);
 		instance.jexcel.setMeta(name, "oldPreview", instance.jexcel.getMeta(name, "preview"));
 		// set preview to acutal value until callback completes
-		delete instance.jexcel.options.meta[name].preview;
+		if (instance.jexcel.options.meta[name] && instance.jexcel.options.meta[name].preview !== undefined) {
+			delete instance.jexcel.options.meta[name].preview;
+		}
 	},
 	//updateTable: csvmodel.updateTable,
 	meta: {},

@@ -6612,39 +6612,48 @@
         /**
          * From starckoverflow contributions
          */
-        obj.parseCSV = function(str, delimiter) {
+        obj.parseCSV = function(str, delimiter, enclosure, esc) {
             // Remove last line break
             str = str.replace(/\r?\n$|\r$|\n$/g, "");
-            // Last caracter is the delimiter
+            // Last character is the delimiter
             if (str.charCodeAt(str.length-1) == 9) {
                 str += "\0";
             }
+
             // user-supplied delimeter or default comma
             delimiter = (delimiter || ",");
+
+			if (delimiter == "\t") {
+				enclosure = (enclosure ||"");
+				esc = (esc || "");
+			} else {
+				enclosure = (enclosure || '"');
+				esc = (esc || '"');
+			}
     
             var arr = [];
-            var quote = false;  // true means we're inside a quoted field
+            var enclosed = false;  // true means we're inside an enclosed field
             // iterate over each character, keep track of current row and column (of the returned array)
             for (var row = 0, col = 0, c = 0; c < str.length; c++) {
                 var cc = str[c], nc = str[c+1];
                 arr[row] = arr[row] || [];
                 arr[row][col] = arr[row][col] || '';
-    
-                // If the current character is a quotation mark, and we're inside a quoted field, and the next character is also a quotation mark, add a quotation mark to the current column and skip the next character
-                if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; }  
+
+                // If the current character is the escape, and we're inside an enclosed field, and the next character is the enclosure, add the enclosure character to the current column and skip the next character
+                if (cc == esc && enclosed && nc == enclosure) { arr[row][col] += cc; ++c; continue; }  
     
                 // If it's just one quotation mark, begin/end quoted field
-                if (cc == '"') { quote = !quote; continue; }
+                if (cc == enclosure) { enclosed = !enclosed; continue; }
     
-                // If it's a comma and we're not in a quoted field, move on to the next column
-                if (cc == delimiter && !quote) { ++col; continue; }
+                // If it's a comma and we're not in an enclosed field, move on to the next column
+                if (cc == delimiter && !enclosed) { ++col; continue; }
     
-                // If it's a newline (CRLF) and we're not in a quoted field, skip the next character and move on to the next row and move to column 0 of that new row
-                if (cc == '\r' && nc == '\n' && !quote) { ++row; col = 0; ++c; continue; }
+                // If it's a newline (CRLF) and we're not in an enclosed field, skip the next character and move on to the next row and move to column 0 of that new row
+                if (cc == '\r' && nc == '\n' && !enclosed) { ++row; col = 0; ++c; continue; }
     
-                // If it's a newline (LF or CR) and we're not in a quoted field, move on to the next row and move to column 0 of that new row
-                if (cc == '\n' && !quote) { ++row; col = 0; continue; }
-                if (cc == '\r' && !quote) { ++row; col = 0; continue; }
+                // If it's a newline (LF or CR) and we're not in an enclosed field, move on to the next row and move to column 0 of that new row
+                if (cc == '\n' && !enclosed) { ++row; col = 0; continue; }
+                if (cc == '\r' && !enclosed) { ++row; col = 0; continue; }
     
                 // Otherwise, append the current character to the current column
                 arr[row][col] += cc;
@@ -6998,24 +7007,38 @@
         var scrollLeft = 0;
 
         obj.updateFreezePosition = function() {
+			let freezeStart = 50;
             scrollLeft = obj.content.scrollLeft;
             var width = 0;
-            if (scrollLeft > 50) {
+            if (scrollLeft > freezeStart) {
+				//obj.headerContainer.firstChild.classList.add('jexcel_freezed');
+				//obj.headerContainer.firstChild.style.left = width + 'px';
+				width += Number(obj.rows[0].firstChild.style.width);
                 for (var i = 0; i < obj.options.freezeColumns; i++) {
                     if (i > 0) {
-                        width += parseInt(obj.options.columns[i-1].width);
+                        // Must check if the previous column is hidden or not to determine whether the width should be added or not!
+                        if (obj.options.columns[i-1].type !== "hidden") {
+                            width += parseInt(obj.options.columns[i-1].width);
+                        }
                     }
                     obj.headers[i].classList.add('jexcel_freezed');
-                    obj.headers[i].style.left = width + 'px';
+                    obj.headers[i].style.left = freezeStart + width + 'px';
                     for (var j = 0; j < obj.rows.length; j++) {
                         if (obj.rows[j] && obj.records[j][i]) {
-                            var shifted = (scrollLeft + (i > 0 ? obj.records[j][i-1].style.width : 0)) - 51 + 'px';
+							//var shifted = (scrollLeft - 51) + 'px';
+							////obj.rows[j].firstChild.style.left = shifted;
+							////obj.rows[j].firstChild.classList.add('jexcel_freezed');
+							//shifted += obj.rows[j].firstChild.style.width;
+							//shifted += (i > 0 ? obj.records[j][i-1].style.width : 0) + 'px';
+                            var shifted = freezeStart + Number(obj.rows[j].firstChild.style.width) + Number(i > 0 ? obj.records[j][i-1].style.width : 0) + 'px';
                             obj.records[j][i].classList.add('jexcel_freezed');
                             obj.records[j][i].style.left = shifted;
                         }
                     }
                 }
             } else {
+				//obj.headerContainer.firstChild.classList.remove('jexcel_freezed');
+				//obj.headerContainer.firstChild.style.left = '';
                 for (var i = 0; i < obj.options.freezeColumns; i++) {
                     obj.headers[i].classList.remove('jexcel_freezed');
                     obj.headers[i].style.left = '';
@@ -7026,6 +7049,10 @@
                         }
                     }
                 }
+				//for (var j = 0; j < obj.rows.length; j++) {
+				//	obj.rows[j].firstChild.classList.remove('jexcel_freezed');
+				//	obj.rows[j].firstChild.style.left = '';
+				//}
             }
 
             // Place the corner in the correct place
