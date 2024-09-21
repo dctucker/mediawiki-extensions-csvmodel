@@ -3085,15 +3085,15 @@
             }
     
             // Freeze columns? 
-            var freezed = obj.getFreezeWidth();
+            var freezed = obj.getFreezeWidth() + 50;
 
             // Left position check - TODO: change that to the bottom border of the element
             if (x > (obj.content.scrollLeft + freezed) && x < (obj.content.scrollLeft + w1)) {
                 // In the viewport
             } else {
                 // Out of viewport
-                if (x < obj.content.scrollLeft + 30) {
-                    obj.content.scrollLeft = x;
+                if (x < obj.content.scrollLeft + 80) {
+                    obj.content.scrollLeft = x - 50;
                     if (obj.content.scrollLeft < 50) {
                         obj.content.scrollLeft = 0;
                     }
