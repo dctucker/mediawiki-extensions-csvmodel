@@ -167,6 +167,23 @@ jexcel.keyDownControls = (e) => {
 	return jexcel.originalKeyDownControls(e);
 };
 
+jexcel.originalDoubleClickControls = jexcel.doubleClickControls;
+jexcel.doubleClickControls = (e) => {
+	if (jexcel.current) {
+		if (e.target.classList.contains('jexcel_corner')) {
+		} else if (e.target.classList.contains('jexcel_column_filter')) {
+		} else {
+			var jexcelTable = jexcel.getElement(e.target);
+			if (jexcelTable[1] == 1 && jexcel.current.options.columnSorting == true) {
+				// no column sort on double click
+				return;
+			}
+			jexcel.current.emptyEdition = false;
+		}
+	}
+	return jexcel.originalDoubleClickControls(e);
+};
+
 // reset cell preview on undo/redo. param should be "newPreview" or "oldPreview"
 let doPreview = (param) => (el, historyRecord) => {
 	if (historyRecord && historyRecord.records) {
@@ -206,6 +223,7 @@ mw.spreadsheet = jspreadsheet(document.getElementById("spreadsheet1"), {
 		if (mw.spreadsheet.pasting) return;
 		let name = jexcel.getColumnNameFromId([x,y]);
 		var oldPreview = instance.jexcel.getMeta(name, "oldPreview");
+		/*
 		csvmodel.parse(value, (el) => {
 			var hist = instance.jexcel.history[instance.jexcel.historyIndex];
 			if (hist.records) {
@@ -216,17 +234,42 @@ mw.spreadsheet = jspreadsheet(document.getElementById("spreadsheet1"), {
 
 			h = el.html();
 			rec.oldPreview = oldPreview;
-			delete instance.jexcel.options.meta[name].oldPreview;
+			if (instance.jexcel.options.meta[name]) {
+				delete instance.jexcel.options.meta[name].oldPreview;
+			}
 			rec.newPreview = h;
 			instance.jexcel.setMeta(name, "preview", h);
 			cell.innerHTML = h;
+			console.log(instance.jexcel.historyIndex);
+		});
+		*/
+	},
+	onafterchanges: (instance, records) => {
+		let wasPasting = instance.jexcel.pasting;
+		instance.jexcel.pasting = false;
+		if (wasPasting) return; // TODO
+		records.forEach(rec => {
+			if (!rec || !rec.newValue || !rec.x || !rec.y) return;
+			let name = jexcel.getColumnNameFromId([rec.x, rec.y]);
+			var oldPreview = instance.jexcel.getMeta(name, "oldPreview");
+
+			csvmodel.parse(rec.newValue, (el) => {
+				h = el.html();
+				rec.oldPreview = oldPreview;
+				if (instance.jexcel.options.meta[name]) {
+					delete instance.jexcel.options.meta[name].oldPreview;
+				}
+				rec.newPreview = h;
+				instance.jexcel.setMeta(name, "preview", h);
+				var cell = instance.jexcel.getCellFromCoords(rec.x, rec.y);
+				cell.innerHTML = h;
+			});
 		});
 	},
 	onbeforepaste: (instance) => {
 		instance.jexcel.pasting = true;
 	},
 	onpaste: (instance) => {
-		instance.jexcel.pasting = false;
 	},
 	//updateTable: csvmodel.updateTable,
 	meta: {},

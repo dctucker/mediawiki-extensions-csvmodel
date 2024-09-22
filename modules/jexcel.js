@@ -241,7 +241,7 @@
                 noCellsSelected: 'No cells selected',
             },
             // About message
-            about:"jExcel CE Spreadsheet\nVersion 4.5.0\nWebsite: https://bossanova.uk/jexcel/v3",
+            about:"jExcel CE Spreadsheet\nVersion 4.6.0\nWebsite: https://bossanova.uk/jspreadsheet/v4",
         };
     
         // Loading initial configuration from user
@@ -634,7 +634,7 @@
     
             // Powered by jExcel
             var ads = document.createElement('a');
-            ads.setAttribute('href', 'https://bossanova.uk/jexcel/');
+            ads.setAttribute('href', 'https://bossanova.uk/jspreadsheet/');
             obj.ads = document.createElement('div');
             obj.ads.className = 'jexcel_about';
             try {
