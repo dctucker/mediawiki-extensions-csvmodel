@@ -1,7 +1,6 @@
 
-
 var csvmodel = {
-	textarea: document.getElementById('wpTextbox1'), // document.forms["editform"]["wpTextbox1"]
+	textarea: document.getElementById('wpTextbox1'),
 	snoop: document.getElementById('spreadsheet1-snoop'),
 	coordinates: document.getElementById('spreadsheet1-coordinates'),
 	getSpreadsheetData: () => {
@@ -64,27 +63,6 @@ var csvmodel = {
 	onSelection: (e) => {
 		csvmodel.updateCoordinates();
 		csvmodel.updateSnoop();
-	},
-	onChange: (instance, cell, x, y, value, oldValue) => {
-		/*
-		let name = jexcel.getColumnNameFromId([x,y]);
-		var oldPreview = instance.jexcel.getMeta(name, "oldPreview");
-		csvmodel.parse(value, (el) => {
-			var hist = instance.jexcel.history[instance.jexcel.historyIndex];
-			if (hist.records) {
-				var rec = hist.records.filter(rec => rec.x == x && rec.y == y)[0];
-			} else {
-				return;
-			}
-
-			h = el.html();
-			rec.oldPreview = oldPreview;
-			delete instance.jexcel.options.meta[name].oldPreview;
-			rec.newPreview = h;
-			instance.jexcel.setMeta(name, "preview", h);
-			cell.innerHTML = h;
-		});
-		*/
 	},
 	focus: () => {
 		jexcel.current = mw.spreadsheet;
@@ -213,7 +191,6 @@ mw.spreadsheet = jspreadsheet(document.getElementById("spreadsheet1"), {
 	minSpareRows: 1,
 	freezeColumns: 0,
 	onselection: csvmodel.onSelection,
-	onchange: csvmodel.onChange,
 	onundo: doPreview("oldPreview"),
 	onredo: doPreview("newPreview"),
 	onbeforechange: (instance, cell, x, y, value) => {
@@ -224,6 +201,32 @@ mw.spreadsheet = jspreadsheet(document.getElementById("spreadsheet1"), {
 		if (instance.jexcel.options.meta[name] && instance.jexcel.options.meta[name].preview !== undefined) {
 			delete instance.jexcel.options.meta[name].preview;
 		}
+	},
+	onchange: (instance, cell, x, y, value, oldValue) => {
+		if (mw.spreadsheet.pasting) return;
+		let name = jexcel.getColumnNameFromId([x,y]);
+		var oldPreview = instance.jexcel.getMeta(name, "oldPreview");
+		csvmodel.parse(value, (el) => {
+			var hist = instance.jexcel.history[instance.jexcel.historyIndex];
+			if (hist.records) {
+				var rec = hist.records.filter(rec => rec.x == x && rec.y == y)[0];
+			} else {
+				return;
+			}
+
+			h = el.html();
+			rec.oldPreview = oldPreview;
+			delete instance.jexcel.options.meta[name].oldPreview;
+			rec.newPreview = h;
+			instance.jexcel.setMeta(name, "preview", h);
+			cell.innerHTML = h;
+		});
+	},
+	onbeforepaste: (instance) => {
+		instance.jexcel.pasting = true;
+	},
+	onpaste: (instance) => {
+		instance.jexcel.pasting = false;
 	},
 	//updateTable: csvmodel.updateTable,
 	meta: {},
