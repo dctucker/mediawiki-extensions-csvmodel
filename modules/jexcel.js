@@ -7030,9 +7030,9 @@
 							////obj.rows[j].firstChild.classList.add('jexcel_freezed');
 							//shifted += obj.rows[j].firstChild.style.width;
 							//shifted += (i > 0 ? obj.records[j][i-1].style.width : 0) + 'px';
-                            var shifted = freezeStart + Number(obj.rows[j].firstChild.style.width) + Number(i > 0 ? obj.records[j][i-1].style.width : 0) + 'px';
+                            var shifted = freezeStart + width + Number(obj.rows[j].firstChild.style.width) + Number(i > 0 ? obj.records[j][i-1].style.width : 0);
                             obj.records[j][i].classList.add('jexcel_freezed');
-                            obj.records[j][i].style.left = shifted;
+                            obj.records[j][i].style.left = shifted + "px";
                         }
                     }
                 }
@@ -7054,6 +7054,14 @@
 				//	obj.rows[j].firstChild.style.left = '';
 				//}
             }
+			
+			// TODO
+			let freezeTop = 50;
+            let scrollTop = obj.content.scrollTop;
+            var height = 0;
+			if (scrollTop > freezeTop) {
+			} else {
+			}
 
             // Place the corner in the correct place
             obj.updateCornerPosition();
