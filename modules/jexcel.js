@@ -6955,7 +6955,8 @@
         obj.scrollControls = function(e) {
             obj.wheelControls();
 
-            if (obj.options.freezeColumns > 0 && obj.content.scrollLeft != scrollLeft) {
+            if ((obj.options.freezeColumns > 0 && obj.content.scrollLeft != scrollLeft) ||
+			    (obj.options.freezeRows > 0    && obj.content.scrollTop != scrollTop)) {
                 obj.updateFreezePosition();
             }
 
@@ -7005,14 +7006,13 @@
         }
 
         var scrollLeft = 0;
+        var scrollTop = 0;
 
         obj.updateFreezePosition = function() {
 			let freezeStart = 50;
             scrollLeft = obj.content.scrollLeft;
             var width = 0;
             if (scrollLeft > freezeStart) {
-				//obj.headerContainer.firstChild.classList.add('jexcel_freezed');
-				//obj.headerContainer.firstChild.style.left = width + 'px';
 				width += Number(obj.rows[0].firstChild.style.width);
                 for (var i = 0; i < obj.options.freezeColumns; i++) {
                     if (i > 0) {
@@ -7025,11 +7025,6 @@
                     obj.headers[i].style.left = freezeStart + width + 'px';
                     for (var j = 0; j < obj.rows.length; j++) {
                         if (obj.rows[j] && obj.records[j][i]) {
-							//var shifted = (scrollLeft - 51) + 'px';
-							////obj.rows[j].firstChild.style.left = shifted;
-							////obj.rows[j].firstChild.classList.add('jexcel_freezed');
-							//shifted += obj.rows[j].firstChild.style.width;
-							//shifted += (i > 0 ? obj.records[j][i-1].style.width : 0) + 'px';
                             var shifted = freezeStart + width + Number(obj.rows[j].firstChild.style.width) + Number(i > 0 ? obj.records[j][i-1].style.width : 0);
                             obj.records[j][i].classList.add('jexcel_freezed');
                             obj.records[j][i].style.left = shifted + "px";
@@ -7049,18 +7044,39 @@
                         }
                     }
                 }
-				//for (var j = 0; j < obj.rows.length; j++) {
-				//	obj.rows[j].firstChild.classList.remove('jexcel_freezed');
-				//	obj.rows[j].firstChild.style.left = '';
-				//}
             }
 			
 			// TODO
-			let freezeTop = 50;
-            let scrollTop = obj.content.scrollTop;
+			let freezeTop = obj.rows[0].getClientRects()[0].height;
+            scrollTop = obj.content.scrollTop;
             var height = 0;
 			if (scrollTop > freezeTop) {
+				height += Number(obj.rows[0].firstChild.style.height) + 4;
+                for (var j = 0; j < obj.options.freezeRows; j++) {
+                    if (j > 0) {
+						height += parseInt(obj.rows[j-1].getClientRects()[0].height) + 2;
+                    }
+                    obj.rows[j].cells[0].classList.add('jexcel_freezed');
+                    obj.rows[j].cells[0].style.top = freezeTop + height + 'px';
+                    for (var i = 0; i < obj.rows[j].cells.length; i++) {
+                        if (obj.rows[j] && obj.records[j][i]) {
+                            var shifted = freezeTop + height + Number(obj.rows[j].firstChild.style.height) + Number(j > 0 ? obj.records[j-1][i].style.height : 0);
+                            obj.records[j][i].classList.add('jexcel_freezed');
+                            obj.records[j][i].style.top = shifted + "px";
+                        }
+                    }
+                }
 			} else {
+                for (var j = 0; j < obj.options.freezeRows; j++) {
+                    obj.rows[j].cells[0].classList.remove('jexcel_freezed');
+                    obj.rows[j].cells[0].style.top = '';
+                    for (var i = 0; i < obj.rows[j].cells.length; i++) {
+                        if (obj.records[j][i]) {
+                            obj.records[j][i].classList.remove('jexcel_freezed');
+                            obj.records[j][i].style.top = '';
+                        }
+                    }
+                }
 			}
 
             // Place the corner in the correct place

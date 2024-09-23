@@ -227,6 +227,7 @@ footer, footer.citizen-page-footer {
 	background-color: var(--jexcel_header_background);
 	position: sticky;
 	position: -webkit-sticky;
+	box-shadow: 1px 1px 1px 1px #888 !important;
 }
 .jexcel tbody tr td:first-child {
 	position: sticky;
@@ -239,6 +240,12 @@ footer, footer.citizen-page-footer {
 	left: 0;
 	top: 0;
 	z-index: 3;
+}
+.jexcel tbody tr td:first-child.jexcel_freezed {
+	z-index: 1;
+}
+.jexcel thead tr td {
+	border-bottom: 1px solid var(--jexcel_border_color);
 }
 .jcontextmenu > div {
 	font-family: "Roboto", "", system-ui, -apple-system, sans-serif;
