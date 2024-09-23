@@ -186,6 +186,10 @@ class CsvContent extends TextContent {
 				}
 			} else {
 				foreach( $row as $value ) {
+					//$value = preg_replace("([^\])\\n", "$1 ", $value);
+					//$value = preg_replace("([^\])\\t", "$1&nbsp;", $value);
+					//$value = preg_replace("\\\\t", "\\t", $value);
+					//$value = preg_replace("\\\\n", "\\n", $value);
 					if( strlen($value) > 0 && $value[0] == "=" ) {
 						$values = explode("␟", $value);
 						$html .= "<td nowrap title='$values[0]'>$values[1]</td>";
